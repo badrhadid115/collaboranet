@@ -1,0 +1,80 @@
+.paper {
+  font-family: Arial, Helvetica, sans-serif;
+  background-color: #fffbff;
+  padding: 2.5rem 1.5rem;
+  margin-bottom: 20px;
+  box-shadow: #bcbcbc 0px 0px 10px 0px;
+  overflow: scroll;
+  .img-devis {
+    width: auto;
+    height: 120px;
+    background-size: cover;
+    background-position: center;
+    margin-bottom: 20px;
+  }
+  .devis-box {
+    display: flex;
+    flex-direction: column;
+    min-height: 15vh;
+    height: 100%;
+    padding: 1rem;
+    border-radius: 10px;
+    background-color: #bcbcbc;
+  }
+
+  .trans-input {
+    background: none;
+    border: none;
+  }
+  table {
+    width: 100%;
+    border-collapse: collapse;
+    background: transparent;
+    border: none;
+  }
+
+  th,
+  td {
+    padding: 10px;
+    text-align: left;
+    border: 5px solid #fffbff;
+    border-radius: 10px;
+  }
+
+  th {
+    background-color: #f1f1f1;
+    border-radius: 8px;
+    column-gap: 10px;
+  }
+
+  tr:nth-child(even) {
+    background-color: #f9f9f9;
+  }
+
+  tr:nth-child(odd) {
+    background-color: transparent;
+  }
+
+  td {
+    padding-right: 10px;
+    vertical-align: middle;
+  }
+}
+.popup-select{
+  z-index: 9999999;
+}
+.ql-toolbar{
+  position: sticky;
+  top: 0
+}
+.client-signature {
+  height: 150px;
+  border: 1px solid #000;
+  border-radius: 10px;
+  padding: 10px;
+}
+.gm-signature {
+  height: 150px;
+  align-items: center;
+  text-align: center;
+}

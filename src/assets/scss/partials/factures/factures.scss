@@ -1,0 +1,33 @@
+.client-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 15vh;
+  height: 100%;
+  width: 40%;
+  padding: 1rem;
+  border-radius: 10px;
+  background-color: #bcbcbc;
+}
+.invoice-info-box {
+  display: flex;
+  flex-direction: column;
+  min-height: 15vh;
+  height: 100%;
+  width: 40%;
+  font-size: 1rem;
+  justify-content: space-between;
+  .info-box {
+    font-weight: 700;
+    width: 50%;
+    background-color: #bcbcbc;
+    border-radius: 10px;
+    padding: 10px;
+  }
+  .info-text {
+    width: 50%;
+    border-radius: 10px;
+    padding: 10px;
+    text-align: end;
+  }
+  
+}
