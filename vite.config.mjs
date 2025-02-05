@@ -4,18 +4,17 @@ import jsconfigPaths from 'vite-jsconfig-paths';
 
 export default defineConfig(({ mode }) => {
   const env = loadEnv(mode, process.cwd(), '');
-  const API_URL = `${env.VITE_APP_BASE_NAME}`;
-  const PORT = `${env.CLIENT_PORT || 3000}`;
+  const API_URL = env.VITE_APP_BASE_NAME || '/';
+  const PORT = parseInt(env.CLIENT_PORT, 10) || 3000;
+  const BACKEND_URL = env.VITE_BACKEND_URL || 'http://localhost:5000';
 
   return {
     server: {
-      // this ensures that the browser opens upon server start
       open: true,
-      // this sets a default port to 3000
       port: PORT,
       proxy: {
         '/api': {
-          target: 'http://localhost:5000',
+          target: BACKEND_URL,
           changeOrigin: true,
           rewrite: (path) => path.replace(/^\/api/, '')
         }
@@ -24,31 +23,10 @@ export default defineConfig(({ mode }) => {
     define: {
       global: 'window'
     },
-    resolve: {
-      alias: [
-        // { find: '', replacement: path.resolve(__dirname, 'src') },
-        // {
-        //   find: /^~(.+)/,
-        //   replacement: path.join(process.cwd(), 'node_modules/$1')
-        // },
-        // {
-        //   find: /^src(.+)/,
-        //   replacement: path.join(process.cwd(), 'src/$1')
-        // }
-        // {
-        //   find: 'assets',
-        //   replacement: path.join(process.cwd(), 'src/assets')
-        // },
-      ]
-    },
     css: {
       preprocessorOptions: {
-        scss: {
-          charset: false
-        },
-        less: {
-          charset: false
-        }
+        scss: { charset: false },
+        less: { charset: false }
       },
       charset: false,
       postcss: {
@@ -56,11 +34,7 @@ export default defineConfig(({ mode }) => {
           {
             postcssPlugin: 'internal:charset-removal',
             AtRule: {
-              charset: (atRule) => {
-                if (atRule.name === 'charset') {
-                  atRule.remove();
-                }
-              }
+              charset: (atRule) => atRule.remove()
             }
           }
         ]

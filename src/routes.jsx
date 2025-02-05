@@ -49,7 +49,7 @@ const commercialRoutes = [
   {
     exact: true,
     path: '/clients',
-    element: lazy(() => import('./views/commercial/clients/clients'))
+    element: lazy(() => import('./views/commercial/clients/clients/clients'))
   },
   {
     exact: true,

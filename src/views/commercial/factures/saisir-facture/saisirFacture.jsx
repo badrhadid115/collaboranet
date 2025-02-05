@@ -1,26 +1,35 @@
+/* eslint-disable no-unused-vars */
 import React, { useState, useEffect, useMemo } from 'react';
 import { Spin, Form, Button, Popconfirm, Tooltip, DatePicker, Input, Radio, Select } from 'antd';
 import { Row, Col } from 'react-bootstrap';
 import dayjs from 'dayjs';
 import axios from 'axios';
+import Swal from 'sweetalert2';
+import InputLabel from '@mui/material/InputLabel';
 //used Icons
 import { HiDocumentPlus } from 'react-icons/hi2';
-import { FaFilePdf } from 'react-icons/fa6';
 import { IoIosWarning } from 'react-icons/io';
 import { VscClearAll } from 'react-icons/vsc';
 import { BsInfoCircleFill } from 'react-icons/bs';
 import { MdOutlineFormatListBulleted } from 'react-icons/md';
+import { RiUserStarFill } from 'react-icons/ri';
+import { HiReceiptTax } from 'react-icons/hi';
+import { FaCircleCheck, FaCircleXmark, FaCircleMinus, FaFilePdf } from 'react-icons/fa6';
+
 import Card from 'elements/MainCard';
 import logo from 'assets/images/full-logo.png';
 import { FloatToLetters } from 'utils/genUtils';
 import { GenMan } from 'config/constant';
 import apiLinks from 'config/apiLinks';
 function SaisirFacture() {
+  //temp var
+  const error = false;
   const [loading, setLoading] = useState(false);
   const [detailLoading, setDetailLoading] = useState(false);
   document.title = `Saisir une Facture | ${import.meta.env.VITE_APP_NAME}`;
   const [invoiceId, setInvoiceId] = useState();
   const [clientOptions, setClientOptions] = useState([]);
+  const [clientInfo, setClientInfo] = useState({});
   const [devisOptions, setDevisOptions] = useState([]);
   const [normOptions, setNormOptions] = useState([]);
   const [pdfData, setPdfData] = useState({});
@@ -30,8 +39,8 @@ function SaisirFacture() {
     invoice_notes: '',
     invoice_conformity: '',
     invoice_comment: '',
-    invoice_fk_devis_id: '',
-    invoice_fk_norm_id: ''
+    invoice_fk_devis_id: null,
+    invoice_fk_norm_id: null
   };
   async function getInvoiceId(date) {
     try {
@@ -47,7 +56,7 @@ function SaisirFacture() {
   const handleDateChange = (date) => {
     getInvoiceId(date.format('YYYY-MM-DD'));
   };
-  async function getClients () {
+  async function getClients() {
     try {
       const clients = await axios.get(apiLinks.GET.clients);
       setClientOptions(clients.data);
@@ -55,18 +64,52 @@ function SaisirFacture() {
       console.log(err);
     }
   }
+  async function getNorms() {
+    try {
+      const norms = await axios.get(apiLinks.GET.invoiceNorms);
+      setNormOptions(norms.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
+  async function getDevisOptions(id) {
+    try {
+      const devis = await axios.get(apiLinks.GET.devisOptions(id));
+      setDevisOptions(devis.data);
+    } catch (err) {
+      console.log(err);
+    }
+  }
   useEffect(() => {
     getClients();
+    getNorms();
   }, []);
+  const clientLabel = (client) => (
+    <div className="d-flex justify-content-between align-items-center w-100">
+      <span>{client.client_name}</span>
+      <span>
+        {Boolean(client.client_is_ht) && <HiReceiptTax />}
+        {Boolean(client.client_is_ca) && <RiUserStarFill />}
+      </span>
+    </div>
+  );
+  const handleClientChange = (client) => {
+    const clientInfo = clientOptions.find((c) => c.client_id === client);
+    setClientInfo(clientInfo);
+    if (!clientInfo.client_address || !clientInfo.client_ice) {
+      Swal.fire({
+        title: 'Attention',
+        text: 'Le client a une adresse ou un ICE, vous devez le renseigner',
+        icon: 'warning',
+        showConfirmButton: false,
+        footer: `<a href="/clients/${clientInfo.client_name}">Modifier ${clientInfo.client_name}</a>`
+      });
+    }
+    getDevisOptions(client);
+  };
+  console.log(devisOptions);
   //temp var
-  const error = false;
   const [form] = Form.useForm();
-  useEffect(() => {
-    setLoading(true);
-    setTimeout(() => {
-      setLoading(false);
-    }, 1000);
-  }, []);
   const handleSubmit = async (values) => {
     console.log(values);
   };
@@ -124,11 +167,27 @@ function SaisirFacture() {
               <Card title={'Information de la facture'} icon={<BsInfoCircleFill />}>
                 <Row className="mb-3">
                   <Col>
-                    <Select placeholder="Client" className="w-100"></Select>
+                    <InputLabel htmlFor="invoice_fk_client_id">Client</InputLabel>
+                    <Select
+                      placeholder="Client"
+                      className="w-100"
+                      options={clientOptions.map((client) => ({
+                        value: client.client_id,
+                        label: clientLabel(client)
+                      }))}
+                      onChange={handleClientChange}
+                    />
+                  </Col>
+                  <Col>
+                    <InputLabel htmlFor="invoice_fk_devis_id">Devis</InputLabel>
+                    <Form.Item name="invoice_fk_devis_id" rules={[{ required: true, message: 'Le devis est obligatoire' }]}>
+                      <Select placeholder="Devis" className="w-100" options={devisOptions} disabled={true} />
+                    </Form.Item>
                   </Col>
                 </Row>
                 <Row>
                   <Col>
+                    <InputLabel htmlFor="invoice_date">Date de la facture</InputLabel>
                     <Form.Item name="invoice_date" rules={[{ required: true, message: 'La date est obligatoire' }]}>
                       <DatePicker
                         name="invoice_date"
@@ -136,6 +195,61 @@ function SaisirFacture() {
                         className="w-100"
                         placeholder="Date de la facture"
                         onChange={handleDateChange}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col>
+                    <InputLabel htmlFor="invoice_fk_norm_id">Norme</InputLabel>
+                    <Form.Item name="invoice_fk_norm_id" rules={[{ required: true, message: 'La norme est obligatoire' }]}>
+                      <Select
+                        placeholder="Norme"
+                        className="w-100"
+                        options={normOptions.map((norm) => ({ value: norm.norm_id, label: norm.norm_name }))}
+                        value={form.getFieldValue('invoice_fk_norm_id') || null}
+                      />
+                    </Form.Item>
+                  </Col>
+                  <Col className="w-100">
+                    <InputLabel htmlFor="invoice_conformity">Conformité</InputLabel>
+                    <Form.Item name="invoice_conformity" rules={[{ required: true, message: 'La conformité est obligatoire' }]}>
+                      <Radio.Group
+                        name="invoice_conformity"
+                        value={form.getFieldValue('invoice_conformity')}
+                        className="d-flex w-100"
+                        optionType="button"
+                      >
+                        <Radio.Button value="conforme" className="flex-grow-1 text-center conform">
+                          <div className="d-flex align-items-center justify-content-center">
+                            <FaCircleCheck className="me-2" />
+                            <span>Conforme</span>
+                          </div>
+                        </Radio.Button>
+                        <Radio.Button value="non conforme" className="flex-grow-1 text-center non-conform">
+                          <div className="d-flex align-items-center justify-content-center">
+                            <FaCircleXmark className="me-2" />
+                            <span>Non Conforme</span>
+                          </div>
+                        </Radio.Button>
+                        <Radio.Button value="NA" className="flex-grow-1 text-center na">
+                          <div className="d-flex align-items-center justify-content-center">
+                            <FaCircleMinus className="me-2" />
+                            <span>NA</span>
+                          </div>
+                        </Radio.Button>
+                      </Radio.Group>
+                    </Form.Item>
+                  </Col>
+                </Row>
+                <Row>
+                  <Col>
+                    <InputLabel htmlFor="invoice_comment">Commentaire</InputLabel>
+                    <Form.Item name="invoice_comment">
+                      <Input.TextArea
+                        name="invoice_comment"
+                        value={form.getFieldValue('invoice_comment')}
+                        autoSize={{ minRows: 2, maxRows: 3 }}
+                        placeholder="Commentaire"
+                        className="trans-input"
                       />
                     </Form.Item>
                   </Col>
@@ -161,14 +275,16 @@ function SaisirFacture() {
                       <div className="client-box">
                         <div className="mb-5">
                           <h4 className="fw-bold">Client</h4>
-                          <span>Nom du client</span>
+                          <span>{clientInfo?.client_name || '[Nom du client]'}</span>
                           <br />
-                          <span>Adresse du client</span>
+                          <span>{clientInfo?.client_address || '[Adresse du client]'}</span>
                         </div>
-                        <div>
-                          <strong>ICE N°: </strong>
-                          <span>123456789</span>
-                        </div>
+                        {clientInfo?.client_ice && (
+                          <div>
+                            <strong>ICE N°: </strong>
+                            <span>{clientInfo?.client_ice}</span>
+                          </div>
+                        )}
                       </div>
                       <div className="invoice-info-box">
                         <div className="mb-2 d-flex align-items-center w-100">
@@ -288,6 +404,15 @@ function SaisirFacture() {
                         </tbody>
                       </table>
                     </Col>
+                  </Row>
+                  <Row>
+                    <Input.TextArea
+                      name="invoice_note"
+                      value={form?.getFieldValue('invoice_note')}
+                      autoSize={{ minRows: 3, maxRows: 3 }}
+                      placeholder="Notes"
+                      className="trans-input"
+                    />
                   </Row>
                   <Row className="mb-3">
                     <div className="mt-3 w-100 d-flex justify-content-between">

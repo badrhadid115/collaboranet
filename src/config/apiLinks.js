@@ -1,5 +1,6 @@
 const apiLinks = {
   GET: {
+    auth: '/api/auth',
     sectors: '/api/comm/sectors',
     clientTypes: '/api/comm/client-types',
     types: '/api/comm/types',
@@ -14,6 +15,8 @@ const apiLinks = {
     nextDevisId: '/api/comm/next-devis-id',
     invoices: '/api/comm/invoices',
     nextInvoiceId: '/api/comm/next-invoice-id',
+    devisOptions: (id) => `/api/comm/devis-options/${id}`,
+    invoiceNorms: '/api/comm/invoice-norms',
     deliveryNotes: '/api/comm/delivery-notes',
     creditNotes: '/api/comm/credit-notes',
     samples: '/api/labo/samples',

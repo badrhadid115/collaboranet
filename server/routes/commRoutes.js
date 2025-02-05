@@ -1841,23 +1841,39 @@ router.post('/invoice-norms', checkPermission('CanPOSTInvoices'), async (req, re
 });
 router.get('/devis-options/:id', async (req, res) => {
   try {
-    const devis = await db('co_devis')
-      .select(
-        'devis_id',
-        'devis_full_id',
-        'devis_version',
-        db.raw(
-          "CONCAT(co_devis.devis_full_id, IF(co_devis.devis_version > 0, CONCAT('.V', co_devis.devis_version), '')) as devis_formatted_id"
-        ),
-        'devis_object'
-      )
-      .where('devis_fk_client_id', req.params.id)
-      .andWhere('devis_fk_status', 8);
-
+    const devis = await db('co_devis').select('*').from('invoice_info').where('devis_fk_client_id', req.params.id);
     res.status(200).json(devis);
   } catch (err) {
     res.status(500).json(err);
     console.log(err);
+  }
+});
+router.get('/devis-details/:id', checkPermission('CanViewDevis'), async (req, res) => {
+  const { id } = req.params;
+
+  try {
+    const devis = await db('co_devis').select('devis_type').where('devis_id', id).first();
+
+    if (!devis) {
+      return res.status(404).json({ message: 'Devis non trouvé' });
+    }
+
+    const tableMap = {
+      ST: 'st_devis_details',
+      FF: 'ff_devis_details'
+    };
+
+    const tableName = tableMap[devis.devis_type];
+
+    if (!tableName) {
+      return res.status(400).json({ message: `Type de devis invalide: ${devis.devis_type}` });
+    }
+
+    const elements = await db(tableName).select('*').where('devis_id', id);
+    res.status(200).json(elements);
+  } catch (err) {
+    console.error('Erreur lors de la récupération du devis:', err);
+    res.status(500).json({ message: 'Erreur serveur', error: err.message });
   }
 });
 router.get('/invoice-details/:id', checkPermission('CanViewInvoices'), async (req, res) => {

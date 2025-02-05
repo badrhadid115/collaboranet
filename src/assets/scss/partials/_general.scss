@@ -126,7 +126,6 @@ label {
   background: $theme-color2;
 }
 
-/* ==========  card css start  =========== */
 
 .anim-rotate {
   animation: anim-rotate 1s linear infinite;
@@ -280,17 +279,9 @@ p.text-muted {
     border-radius: 0;
   }
 }
-
-/* ==========  scrollbar End  =========== */
-
 .scroll-y {
   z-index: 1027;
 }
-
-/* ==========  scrollbar End  ===========
- ==========  card css End  ===========
- ================================    Dropdown Start  ===================== */
-
 .dropdown-menu {
   padding: 20px 0;
   margin-top: 15px;
@@ -363,7 +354,6 @@ p.text-muted {
   }
 }
 
-/* ================================    Dropdown End  ===================== */
 @media (min-width: 1600px) {
   .container {
     max-width: 1540px;
@@ -375,12 +365,6 @@ p.text-muted {
     max-width: 100%;
   }
 }
-
-/* ========================================================
- ===============     document      ======================
- ========================================================
-
-/* Code snippets */
 
 .highlight {
   padding: 1rem;
@@ -404,8 +388,6 @@ p.text-muted {
   }
 }
 
-/* ================================    Blockquote Start  ===================== */
-
 .blockquote {
   border-left: 0.25rem solid $theme-border;
   padding: 0.5rem 1rem;
@@ -416,7 +398,6 @@ p.text-muted {
   }
 }
 
-/* ================================    Blockquote End  ===================== */
 
 .btn-link {
   text-decoration: none;
@@ -537,4 +518,7 @@ p.text-muted {
   @media screen and (max-width: 575px) {
     width: 100%;
   }
+}
+.excel-button{
+  background-color: #008000;
 }

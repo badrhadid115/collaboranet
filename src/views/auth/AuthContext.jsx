@@ -1,8 +1,8 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import { Loading, Page500, Page403, Page404 } from 'views/pages';
-
+import PageState from 'views/pages/index';
+import apiLinks from 'config/apiLinks';
 const AuthContext = createContext();
 
 const AuthProvider = ({ children }) => {
@@ -13,7 +13,7 @@ const AuthProvider = ({ children }) => {
   useEffect(() => {
     const fetchUser = async () => {
       try {
-        const response = await axios.get('/api/auth');
+        const response = await axios.get(apiLinks.GET.auth);
         setUser(response.data);
       } catch (error) {
         if (error.response && error.response.status === 500) {
@@ -42,21 +42,11 @@ const AuthProvider = ({ children }) => {
 
   const value = useMemo(() => ({ user }), [user]);
 
-  if (loading) {
-    return <Loading />;
-  }
-
-  if (error === 500) {
-    return <Page500 />;
-  }
-  if (error === 403) {
-    return <Page403 />;
-  }
-  if (error === 404) {
-    return <Page404 />;
-  }
-
-  return <AuthContext.Provider value={value}>{children}</AuthContext.Provider>;
+  return (
+    <PageState loading={loading} error={error}>
+      <AuthContext.Provider value={value}>{children}</AuthContext.Provider>
+    </PageState>
+  );
 };
 AuthProvider.propTypes = {
   children: PropTypes.node.isRequired

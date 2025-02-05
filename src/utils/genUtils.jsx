@@ -1,6 +1,12 @@
+import PropTypes from 'prop-types';
 import ExcelJS from 'exceljs';
 import { saveAs } from 'file-saver';
+import { Link } from 'react-router-dom';
+import { List, Tooltip, Button, Input, AutoComplete } from 'antd';
+import { Col } from 'react-bootstrap';
+import { PiMicrosoftExcelLogoFill } from 'react-icons/pi';
 
+import excelOptions from 'config/excelOptions';
 export async function downloadExcel(data, options = {}) {
   const { include = [], exclude = [], headers = {}, fileName = 'file' } = options;
 
@@ -83,6 +89,14 @@ export const currencyFormatter = (amount, currency = '') => {
   }
   return formattedAmount?.replace(/\u202F/g, ' ');
 };
+/**
+ * Convert a float number to a string representing the same number in words.
+ * @param {number} number The number to convert.
+ * @param {string} [currency] The currency to use in the output string.
+ * @returns {string} The number in words.
+ * @example
+ * FloatToLetters(123.45, 'euros') // 'cent vingt-trois euros et quarante-cinq centimes.'
+ */
 export function FloatToLetters(number, currency) {
   const letter = {
     0: 'zéro',
@@ -171,3 +185,93 @@ export function FloatToLetters(number, currency) {
 
   return result + '.';
 }
+export const TooltipButton = ({ title, icon, onClick, ...props }) => (
+  <Tooltip title={title}>
+    <Button onClick={onClick} shape="circle" icon={icon} size="large" {...props} />
+  </Tooltip>
+);
+TooltipButton.propTypes = {
+  title: PropTypes.string,
+  icon: PropTypes.node,
+  onClick: PropTypes.func
+};
+export const renderAutocompleteOptions = (options, config) => {
+  const renderMeta = (option) => (
+    <List.Item.Meta
+      title={
+        <div className="d-flex justify-content-between">
+          <span className="fw-bold fs-6">{option[config.labelKey]}</span>
+          {config.extraFields?.rt && <span className="fs-6">{option[config.extraFields.rt]}</span>}
+        </div>
+      }
+      description={
+        <div className="d-flex justify-content-between">
+          {config.extraFields?.lb && <div className="fw-bold">{option[config.extraFields.lb]}</div>}
+          {config.extraFields?.rb && <div className="fw-bold">{option[config.extraFields.rb]}</div>}
+        </div>
+      }
+    />
+  );
+  const generateLink = (template, option) => {
+    return template.replace(/:(\w+)/g, (_, key) => option[key] || '');
+  };
+
+  return options.map((option) => {
+    const value = option[config.valueKey] || '';
+    const label = (
+      <List.Item key={option[config.keyField]}>
+        <Link to={generateLink(config.link, option)} className="text-decoration-none">
+          {renderMeta(option)}
+        </Link>
+      </List.Item>
+    );
+
+    return { value, label };
+  });
+};
+export const SearchBar = ({ autocompleteOptions, handleSearch, autoCompleteConfig }) => {
+  return (
+    <Col md={3}>
+      <AutoComplete
+        options={renderAutocompleteOptions(autocompleteOptions, autoCompleteConfig)}
+        onSearch={handleSearch}
+        placeholder="Rechercher ..."
+        style={{ minWidth: '100%' }}
+      >
+        <Input.Search placeholder="Rechercher ..." allowClear />
+      </AutoComplete>
+    </Col>
+  );
+};
+SearchBar.propTypes = {
+  autocompleteOptions: PropTypes.array,
+  handleSearch: PropTypes.func,
+  autoCompleteConfig: PropTypes.object
+};
+export const ListPageActions = ({ data, dataKey, title, addTitle, CanEdit, addAction, addIcon }) => {
+  return (
+    <Col className="text-end my-3 d-flex align-items-center justify-content-end" md={18}>
+      <TooltipButton
+        title={title}
+        type="primary"
+        className="excel-button"
+        icon={<PiMicrosoftExcelLogoFill size={25} />}
+        onClick={() => {
+          downloadExcel(data, excelOptions[dataKey]);
+        }}
+      />
+      <div className="desktop-only ms-3">
+        {CanEdit && <TooltipButton title={addTitle} type="primary" icon={addIcon} onClick={addAction} />}
+      </div>
+    </Col>
+  );
+};
+ListPageActions.propTypes = {
+  data: PropTypes.array,
+  dataKey: PropTypes.string,
+  title: PropTypes.string,
+  addTitle: PropTypes.string,
+  CanEdit: PropTypes.bool,
+  addAction: PropTypes.func,
+  addIcon: PropTypes.node
+};
