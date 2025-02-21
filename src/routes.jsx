@@ -1,9 +1,10 @@
 import React, { Suspense, Fragment, lazy } from 'react';
 import { Routes, Route } from 'react-router-dom';
 
-import Loading from './views/pages/loading';
+import Loading from './elements/hoc/loading';
 import AdminLayout from './layouts/AdminLayout';
-import AuthGuard from 'views/auth/AuthGuard';
+import AuthGuard from 'guards/AuthGuard';
+import GuestGuard from 'guards/GuestGuard';
 export const renderRoutes = (routes = []) => (
   <Suspense fallback={<Loading />}>
     <Routes>
@@ -31,16 +32,19 @@ const authRoutes = [
   {
     exact: true,
     path: '/connexion',
+    guard: GuestGuard,
     element: lazy(() => import('./views/auth/SignIn'))
   },
   {
     exact: true,
     path: '/req-reinitialisation',
+    guard: GuestGuard,
     element: lazy(() => import('./views/auth/resetPwdReq'))
   },
   {
     exact: true,
     path: '/reinitialisation-mdp',
+    guard: GuestGuard,
     element: lazy(() => import('./views/auth/resetPwd'))
   }
 ];
@@ -69,7 +73,7 @@ const commercialRoutes = [
   {
     exact: true,
     path: '/devis',
-    element: lazy(() => import('./views/commercial/devis/devis'))
+    element: lazy(() => import('./views/commercial/devis/devisList/devis'))
   },
   {
     exact: true,
@@ -125,7 +129,7 @@ const otherRoutes = [
   {
     path: '*',
     exact: true,
-    element: lazy(() => import('./views/pages/page404'))
+    element: lazy(() => import('./elements/hoc/page404'))
   }
 ];
 

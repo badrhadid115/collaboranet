@@ -3,7 +3,7 @@ import axios from 'axios';
 import ImgCrop from 'antd-img-crop';
 import { Row, Col } from 'react-bootstrap';
 import { Button, Image, Tooltip, Upload } from 'antd';
-import { useAuth } from 'views/auth/AuthContext';
+import { useAuth } from 'contexts/AuthContext';
 import Blank from '../../../../assets/images/blank-user.jpg';
 
 function Profile() {

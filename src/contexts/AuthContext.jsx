@@ -1,7 +1,7 @@
 import React, { createContext, useContext, useEffect, useState, useMemo } from 'react';
 import PropTypes from 'prop-types';
 import axios from 'axios';
-import PageState from 'views/pages/index';
+import PageState from 'elements/hoc';
 import apiLinks from 'config/apiLinks';
 const AuthContext = createContext();
 

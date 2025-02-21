@@ -12,8 +12,8 @@ import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
 
 //LOCAL IMPORTS
-import { Loading, Page500, Page403, Page404 } from 'views/pages';
-import { useAuth } from 'views/auth/AuthContext';
+import { Loading, Page500, Page403, Page404 } from 'elements/hoc';
+import { useAuth } from 'contexts/AuthContext';
 import { downloadExcel } from 'utils/genUtils';
 import { renderFileLink } from 'utils/laboUtils';
 import excelOptions from 'config/excelOptions';

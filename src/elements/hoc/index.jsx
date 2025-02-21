@@ -1,6 +1,5 @@
 import React from 'react';
 import PropTypes from 'prop-types';
-import { Empty } from 'antd';
 import Loading from './loading';
 import Page500 from './page500';
 import Page403 from './page403';
@@ -18,7 +17,7 @@ const PageState = ({ loading, error, children }) => {
       case 404:
         return <Page404 />;
       default:
-        return <Empty description="Une erreur est survenue" />;
+        return children;
     }
   }
 

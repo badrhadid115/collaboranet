@@ -1,15 +1,16 @@
+const messages = require('../messages');
 function checkRole(role) {
   return (req, res, next) => {
     try {
       if (req.isAuthenticated()) {
         const userRole = req.user.role?.toLowerCase();
         const replacedRole = req.user.replacedUserRole?.toLowerCase();
-        if (userRole === role.toLowerCase() || replacedRole === role.toLowerCase()) {
+        if (userRole === role.toLowerCase() || replacedRole === role.toLowerCase() || role === 'super admin') {
           return next();
         }
-        return res.status(403).json({ error: 'Accés non autorisé' });
+        return res.status(403).json(messages.Error403);
       }
-      res.status(401).json({ error: 'Utilisateur non authentifié' });
+      res.status(401).json(messages.Error401);
     } catch (err) {
       next(err);
     }
@@ -20,12 +21,12 @@ function checkPermission(permission) {
   return (req, res, next) => {
     try {
       if (req.isAuthenticated()) {
-        if (req.user.permissions?.includes(permission)) {
+        if (req.user.permissions?.includes(permission) || req.user.role?.toLowerCase() === 'super admin') {
           return next();
         }
-        return res.status(403).json({ error: 'Access Denied' });
+        return res.status(403).json(messages.Error403);
       }
-      res.status(401).json({ error: 'User not authenticated' });
+      res.status(401).json(messages.Error401);
     } catch (err) {
       next(err);
     }

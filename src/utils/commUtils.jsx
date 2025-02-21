@@ -1,6 +1,6 @@
 import { Link } from 'react-router-dom';
 import PropTypes from 'prop-types';
-import { Tooltip } from 'antd';
+import { Tooltip, Progress } from 'antd';
 import { CheckCircleOutlined, ClockCircleOutlined, FileDoneOutlined, CloseCircleOutlined, MinusCircleOutlined } from '@ant-design/icons';
 
 import { currencyFormatter } from 'utils/genUtils';
@@ -198,3 +198,56 @@ export function NumberToLetters(number, currency = '') {
 
   return result + '.';
 }
+
+export const DevisProgressBar = ({ currentStep, status, steps, error }) => {
+  const texts = {
+    0: 'Archivé',
+    8: 'Accepté',
+    9: 'Facturé'
+  };
+  const textColors = {
+    0: 'text-danger fw-bold',
+    8: 'text-success fw-bold',
+    9: 'text-info fw-bold'
+  };
+  if (texts[status]) {
+    return <span className={textColors[status]}>{texts[status]}</span>;
+  }
+  const percentage = ((status + 1) / steps) * 100;
+  if (status === 0) {
+    return <span className={'text-danger'}>{currentStep}</span>;
+  }
+  if (status === steps - 1) {
+    return <span className={'text-success'}>{currentStep}</span>;
+  }
+  if (status === steps) {
+    return <span className={'text-info'}>{currentStep}</span>;
+  }
+  const strokeColor = (status) => {
+    let initialColors = [];
+    for (let i = 0; i < status; i++) {
+      initialColors.push('#52c41a');
+    }
+    initialColors.push('#1890ff');
+    for (let i = status + 1; i < steps; i++) {
+      initialColors.push('#bfbfbf');
+    }
+    if (error) {
+      initialColors[status] = '#f5222d';
+    }
+    return initialColors;
+  };
+  const textColor = error ? 'text-danger' : '';
+  return (
+    <div className="d-flex flex-column text-center justify-content-center align-items-center">
+      <span className={textColor}>{currentStep}</span>
+      <Progress percent={percentage} steps={steps} showInfo={false} size={[10, 5]} strokeColor={strokeColor(status)} />
+    </div>
+  );
+};
+DevisProgressBar.propTypes = {
+  currentStep: PropTypes.string.isRequired,
+  status: PropTypes.number.isRequired,
+  steps: PropTypes.number.isRequired,
+  error: PropTypes.bool
+};

@@ -15,7 +15,7 @@ const Errors = {
   },
   Error403: {
     title: 'Accès refusé',
-    subtitle: "Vous n'avez pas les droits nécessaires pour accéder à cette ressource"
+    subtitle: "Vous n'avez pas les droits nécessaires pour accéder à cette ressource ou effectuer cette action"
   },
   Error404: {
     title: 'Ressource introuvable',

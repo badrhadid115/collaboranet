@@ -7,7 +7,7 @@ import { Badge, Tooltip, Modal, Switch } from 'antd';
 import Avatar from '../../../../elements/Avatar';
 import Profile from './Profile';
 import ChangePwd from './ChangePwd';
-import { useAuth } from 'views/auth/AuthContext';
+import { useAuth } from 'contexts/AuthContext';
 const NavRight = () => {
   const { user } = useAuth();
   const [notifications, setNotifications] = useState([]);

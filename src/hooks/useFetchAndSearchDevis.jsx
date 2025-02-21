@@ -27,10 +27,7 @@ const useFetchAndSearch = (apiUrl, searchKeys) => {
     getData();
   }, [apiUrl, getData]);
 
-  const fuse = useMemo(
-    () => new Fuse(data, { keys: searchKeys, threshold: 0.3, includeMatches: true, minMatchCharLength: 3 }),
-    [data, searchKeys]
-  );
+  const fuse = useMemo(() => new Fuse(data, { keys: searchKeys, threshold: 0.3, includeMatches: true }), [data, searchKeys]);
 
   const handleSearch = useDebouncedCallback((value) => {
     if (value?.trim()) {

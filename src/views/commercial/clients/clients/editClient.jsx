@@ -76,7 +76,11 @@ const EditClient = ({ client, open, onCancel, onSuccess }) => {
   useEffect(() => {
     if (client && open) {
       getClientById(client).then((data) => {
-        setInitialValues(data);
+        const normalizedData = Object.keys(data).reduce((acc, key) => {
+          acc[key] = data[key] === null ? '' : data[key];
+          return acc;
+        }, {});
+        setInitialValues(normalizedData);
       });
     }
   }, [client, open]);
@@ -109,8 +113,8 @@ const EditClient = ({ client, open, onCancel, onSuccess }) => {
       .then((data) => {
         onSuccess();
         Swal.fire({
-          title: data.data.success || 'Succès',
-          text: data.data.description || 'Client modifié avec succès',
+          title: data.data.title || 'Succès',
+          text: data.data.subtitle || 'Client modifié avec succès',
           icon: 'success',
           timer: 1500,
           showConfirmButton: false
@@ -118,8 +122,8 @@ const EditClient = ({ client, open, onCancel, onSuccess }) => {
       })
       .catch((error) => {
         Swal.fire({
-          title: error.response.data.error || 'Erreur',
-          text: error.response.data.description || "Une erreur est survenue, veuillez contacter l'administrateur",
+          title: error.response.data.title || 'Erreur',
+          text: error.response.data.subtitle || "Une erreur est survenue, veuillez contacter l'administrateur",
           icon: 'error',
           timer: 3000
         });

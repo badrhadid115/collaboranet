@@ -3,7 +3,7 @@ import { Link } from 'react-router-dom';
 import axios from 'axios';
 import { Card, ListGroup } from 'react-bootstrap';
 import { createResource } from 'utils/createResource';
-import Loading from 'views/pages/loading';
+import Loading from 'elements/hoc/loading';
 
 const fetchNotifications = () =>
   axios

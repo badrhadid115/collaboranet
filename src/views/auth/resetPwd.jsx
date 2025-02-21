@@ -1,14 +1,13 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { Card } from 'react-bootstrap';
-import Breadcrumb from '../../layouts/AdminLayout/Breadcrumb';
 import { Result, Button } from 'antd';
 import ResetPwdForm from './resetPwdForm';
 
 import Logo from '../../assets/brand/logo.png';
 const ResetPwd = () => {
   const [token, setToken] = useState('');
-  const [error, setError] = useState('');
+  const [Error, setError] = useState(false);
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search);
     const token = urlParams.get('token');
@@ -18,13 +17,24 @@ const ResetPwd = () => {
     const verifyToken = async () => {
       try {
         if (token) {
-          await axios.get(`/api/verify-token?token=${token}`);
+          await axios
+            .get(`/api/verify-token?token=${token}`)
+            .then((response) => {
+              if (response.data) {
+                console.log(response.data);
+                setError(false);
+              }
+            })
+            .catch((error) => {
+              console.error('Error verifying token:', error.response.data);
+              setError(true);
+            });
         } else {
-          setError('Le lien est invalide ou a expiré.');
+          setError(true);
         }
       } catch (error) {
         console.error('Error verifying token:', error.response.data);
-        setError('Le lien est invalide ou a expiré.');
+        setError(true);
       }
     };
 
@@ -33,7 +43,6 @@ const ResetPwd = () => {
 
   return (
     <React.Fragment>
-      <Breadcrumb />
       <div className="auth-wrapper">
         <div className="auth-hero" />
         <div className="auth-content">
@@ -52,18 +61,7 @@ const ResetPwd = () => {
               <div className="mb-4">
                 <i className="feather icon-lock auth-icon" />
               </div>
-              {error && (
-                <Result
-                  status="error"
-                  title={error}
-                  extra={
-                    <Button type="primary" onClick={() => (window.location.href = '/')}>
-                      Retour
-                    </Button>
-                  }
-                />
-              )}
-              {!error && <ResetPwdForm />}
+              {Error ? <Result status="404" title={'Lien Invalide'} /> : <div >Test</div>}
             </Card.Body>
           </Card>
         </div>

@@ -108,7 +108,7 @@ router.post('/req-pwd-reset', rateLimitAuth, async (req, res) => {
 });
 
 // Password reset token verification
-router.get('/verify-token', rateLimitAuth, async (req, res) => {
+router.get('/verify-token', async (req, res) => {
   try {
     const token = req.query.token;
     if (!token) {

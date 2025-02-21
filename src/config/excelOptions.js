@@ -46,6 +46,31 @@ const excelOptions = {
     },
     fileName: 'Essais'
   },
+  devis: {
+    include: [
+      'devis_formatted_id',
+      'status_name',
+      'devis_object',
+      'devis_date',
+      'client_name',
+      'type_name',
+      'sector_name',
+      'devis_total_ht',
+      'devis_total_ttc'
+    ],
+    exclude: [],
+    headers: {
+      devis_formatted_id: 'Devis',
+      status_name: 'Statut',
+      devis_date: 'Date',
+      client_name: 'Client',
+      type_name: 'Type',
+      sector_name: 'Secteur',
+      devis_total_ht: 'Montant HT',
+      devis_total_ttc: 'Montant TTC'
+    },
+    fileName: 'Devis'
+  },
   purchases: {
     include: [
       'purchase_order_ref',

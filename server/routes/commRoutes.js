@@ -1,3 +1,4 @@
+/* eslint-disable no-unused-vars */
 const express = require('express');
 const router = express.Router();
 
@@ -8,13 +9,14 @@ const dayjs = require('dayjs');
 
 const { db } = require('../config');
 const { GetNextMethodFullId, GetNextLabTestFullId, GetNextDevisFullId, GetNextInvoiceFullId } = require('../utils');
-const { checkPermission /*,upload*/ } = require('../middleware');
+const { checkPermission, upload } = require('../middleware');
 const messages = require('../messages');
 router.get('/acc', checkPermission('CanAccessCommercialApp'), async (_, res) => {
   try {
     const acc = await db('co_acc')
       .select('acc_id AS value', db.raw('CONCAT(acc_name, " [", acc_desc, "]") AS label'))
-      .whereNot('acc_id', 0);
+      .whereNot('acc_id', 0)
+      .andWhere('acc_is_active', 1);
     res.status(200).json(acc);
   } catch (err) {
     res.status(500).json(err);
@@ -207,21 +209,21 @@ router.get('/clients/:name', checkPermission('CanViewClients'), async (req, res)
 });
 */
 router.post('/clients', checkPermission('CanPOSTClients'), async (req, res) => {
+  const trx = await db.transaction();
   try {
-    const trx = await db.transaction();
     let client = req.body;
-
     client = {
       ...client,
       client_name: client.client_name.toUpperCase(),
       client_city: client.client_city.toUpperCase()
     };
 
-    let existingClients = await trx('co_clients').select('*').where('client_name', client.client_name);
+    let query = trx('co_clients').select('*').where('client_name', client.client_name);
 
     if (client.client_ice) {
-      existingClients = existingClients.orWhere('client_ice', client.client_ice);
+      query = query.orWhere('client_ice', client.client_ice);
     }
+    const existingClients = await query;
 
     if (existingClients.length > 0) {
       await trx.rollback();
@@ -428,7 +430,6 @@ router.get('/labtests', checkPermission('CanAccessCommercialApp'), async (req, r
     res.status(200).json(labtests);
   } catch (err) {
     res.status(500).json(err);
-
     console.log(err);
   }
 });
@@ -590,18 +591,51 @@ router.get('/next-devis-id', async (req, res) => {
     res.status(500).json(messages.serverError);
   }
 });
-//function just for testing, to delete later: is id valid and exists
-router.get('/devis/:id', checkPermission('CanViewDevis'), async (req, res) => {
-  const id = req.params.id?.toUpperCase();
+router.get('/devis-pdf/:id', checkPermission('CanViewDevis'), async (req, res) => {
+  const id = req.params.id;
+  /*
+   TODO: send proper devis pdf data, and refactor
+   data to send only necessary fields:
+    - devis_type
+    - devis_formatted_id
+    - devis_date
+    - client_name
+    - client_city
+    - devis_object
+    - devis_note
+    - devis_currency
+    - devis_forfait
+    - devis_tax
+    - conversion_rate
+        - modality_name
+    - totals: devis_total_ht, devis_total_ttc, devis_total_tva
+    - elements: [
+      - labtest_full_id
+      - labtest_designation
+      - element_note
+      - method_name
+      - acc_name
+      - element_quantity
+      - element_discount
+      - element_price
+      - element_total
+    ] || [
+    element_designation,
+    element_quantity,
+    element_discount,
+    element_price,
+    element_total 
+    ]
+
+   */
   try {
-    const devis = await db('co_devis').select('*').where('devis_formatted_id', id).first();
+    const devis = await db('devis').select('*').where('devis_id', id).first();
     const devisType = devis.devis_type;
     const tableName = devisType === 'FF' ? 'co_ff_devis_elements' : 'co_st_devis_elements';
     const elements = await db(tableName).select('*').where('element_fk_devis_id', devis.devis_id);
     if (devis) {
       res.status(200).json({
         ...devis,
-        devis_date: dayjs(devis.devis_date).format('YYYY-MM-DD'),
         elements
       });
     } else {
@@ -612,80 +646,33 @@ router.get('/devis/:id', checkPermission('CanViewDevis'), async (req, res) => {
     console.log(err);
   }
 });
-/*
+
 router.get('/devis/:filter', checkPermission('CanViewDevis'), async (req, res) => {
-  const filter = req.params.filter;
+  const filter = req.params.filter || 'inprogress';
   const userPermissions = req.user.permissions;
   const statusFilter = {
-    Archivé: [0, 0],
-    'En validation': [1, 3],
-    Envoyé: [4, 7],
-    Accepté: [8, 9],
-    Tous: [0, 9]
+    archived: [0, 0],
+    inprogress: [1, 3],
+    sent: [4, 7],
+    accepted: [8, 9],
+    all: [0, 9]
   };
   const permissionSorting = {
     CanValResp: 1,
     CanApprGen: 2,
     CanPOSTDevis: 3
   };
-  if (!statusFilter.hasOwnProperty(filter)) {
-    return res.status(200).json([]);
+  if (!Object.hasOwn(statusFilter, filter)) {
+    return res.status(400).json(messages.Error400);
   }
-
   const [statusMin, statusMax] = statusFilter[filter];
-
   try {
-    let devisQuery = db('co_devis')
-      .select(
-        'devis_id',
-        'devis_full_id',
-        'devis_version',
-        'devis_error',
-        'devis_type',
-        db.raw(
-          "CONCAT(co_devis.devis_full_id, IF(co_devis.devis_version > 0, CONCAT('.V', co_devis.devis_version), '')) as devis_formatted_id"
-        ),
-        db.raw("DATE_FORMAT(devis_date, '%d/%m/%Y') as devis_date"),
-        'devis_object',
-        'devis_total_ht',
-        'devis_total_ttc',
-        db.raw('IF(co_devis.devis_currency = 1, devis_total_ht, devis_total_ht / devis_currency) as devis_total_ht_cur'),
-        db.raw('IF(co_devis.devis_currency = 1, devis_total_ttc, devis_total_ttc / devis_currency) as devis_total_ttc_cur'),
-        db.raw("IF(co_devis.devis_currency = 1,'MAD','EUR') as devis_currency"),
-        'devis_fk_status',
-        'client_name',
-        'w_types.*',
-        'w_client_segment.segment_name',
-        'co_devis_statuses.*'
-      )
-      .leftJoin('co_devis_statuses', 'co_devis.devis_fk_status', 'co_devis_statuses.status_id')
-      .leftJoin('w_clients', 'co_devis.devis_fk_client_id', 'w_clients.client_id')
-      .leftJoin('w_types', 'co_devis.devis_fk_type_id', 'w_types.type_id')
-      .leftJoin('w_client_segment', 'co_devis.devis_fk_segment_id', 'w_client_segment.segment_id')
-      .whereBetween('co_devis.devis_fk_status', [statusMin, statusMax])
-      .orderBy('devis_id', 'desc');
-
+    let devisQuery = db('devis').whereBetween('devis_fk_status_id', [statusMin, statusMax]).orderBy('devis_id', 'desc');
     let devis = await devisQuery;
-
-    const permissionSortStatus = Object.entries(permissionSorting).find(([permission, status]) => userPermissions.includes(permission));
-
-    if (permissionSortStatus) {
-      const [_, sortStatus] = permissionSortStatus;
-      devis = devis.sort((a, b) => {
-        if (a.devis_fk_status === sortStatus && b.devis_fk_status !== sortStatus) {
-          return -1;
-        } else if (a.devis_fk_status !== sortStatus && b.devis_fk_status === sortStatus) {
-          return 1;
-        } else {
-          return 0;
-        }
-      });
-    }
-
     res.status(200).json(devis);
   } catch (err) {
     console.error(err);
-    res.status(500).json({ error: 'Internal Server Error' });
+    res.status(500).json(messages.serverError);
   }
 });
 router.get('/devis-in/:id/:version', checkPermission('CanViewDevis'), async (req, res) => {
@@ -1505,7 +1492,7 @@ router.post('/devis/archive', checkPermission('CanSendDevis'), async (req, res) 
     });
   }
 });
-*/
+
 router.get('/purchases', checkPermission('CanViewDevis'), async (_, res) => {
   try {
     const purchases = await db.select('*').from('purchases');

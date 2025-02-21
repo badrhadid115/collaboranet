@@ -47,9 +47,7 @@ const AddClient = ({ open, onCancel, onSuccess }) => {
       .matches(/^[A-ZÀ-Ÿ ]+$/, 'La ville doit contenir uniquement des lettres')
       .transform((value) => value.toUpperCase())
       .max(100, 'La ville ne doit pas dépasser 100 caractères'),
-    client_ice: Yup.string()
-      .matches(/^\d$/, 'Le ICE doit contenir des chiffres uniquement')
-      .max(20, "L'ICE ne doit pas dépasser 20 caractères"),
+    client_ice: Yup.string().max(20, "L'ICE ne doit pas dépasser 20 caractères"),
     client_ct: Yup.string().matches(/^\d{8}$/, 'Le CT doit contenir exactement 8 chiffres')
   });
   const getOptions = async () => {
@@ -80,7 +78,6 @@ const AddClient = ({ open, onCancel, onSuccess }) => {
     response
       .then((data) => {
         resetForm();
-        onSuccess();
         Swal.fire({
           title: data.data.title || 'Client ajouté',
           text: data.data.subtitle || 'Le client a été ajouté avec succès',
@@ -88,6 +85,7 @@ const AddClient = ({ open, onCancel, onSuccess }) => {
           timer: 1500,
           showConfirmButton: false
         });
+        onSuccess();
       })
       .catch((error) => {
         Swal.fire({

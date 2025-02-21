@@ -12,11 +12,10 @@ const Breadcrumb = () => {
   const [item, setItem] = useState([]);
 
   useEffect(() => {
-    navigation.items.map((item, index) => {
+    navigation.items.forEach((item, index) => {
       if (item.type && item.type === 'group') {
         getCollapse(item, index);
       }
-      return false;
     });
   });
 
@@ -63,9 +62,10 @@ const Breadcrumb = () => {
             <div className="row align-items-center">
               <div className="col-md-12">
                 <div className="page-header-title">
-                  <h5 className="m-b-10">{title}</h5>
+                  <h5 className="m-0 desktop-only">{title}</h5>
+                  <h3 className="fw-bold my-2 mobile-only">{title}</h3>
                 </div>
-                <ListGroup as="ul" bsPrefix=" " className="breadcrumb">
+                <ListGroup as="ul" bsPrefix=" " className="breadcrumb desktop-only">
                   <ListGroup.Item as="li" bsPrefix=" " className="breadcrumb-item">
                     <Link to="/">
                       <i className="feather icon-home" />

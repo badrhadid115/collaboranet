@@ -11,7 +11,8 @@ const apiLinks = {
     methods: '/api/comm/methods',
     labtests: '/api/comm/labtests',
     purchases: '/api/comm/purchases',
-    devis: '/api/comm/devis',
+    devis: (filter) => `/api/comm/devis/${filter}`,
+    devisPdf: (devisId) => `/api/comm/devis-pdf/${devisId}`,
     nextDevisId: '/api/comm/next-devis-id',
     invoices: '/api/comm/invoices',
     nextInvoiceId: '/api/comm/next-invoice-id',
@@ -31,7 +32,8 @@ const apiLinks = {
     clients: '/api/comm/clients',
     methods: '/api/comm/methods',
     labtests: '/api/comm/labtests'
-  }
+  },
+  logout: '/api/logout'
 };
 
 export default apiLinks;

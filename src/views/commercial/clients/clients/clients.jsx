@@ -1,26 +1,29 @@
 import React, { useState } from 'react';
-import { Row, Col } from 'react-bootstrap';
+import { Row } from 'react-bootstrap';
 import { AiOutlineUserAdd } from 'react-icons/ai';
 import useFetchAndSearch from 'hooks/useFetchAndSearch';
-import PageState from 'views/pages';
-import { useAuth } from 'views/auth/AuthContext';
-import { SearchBar, ListPageActions } from 'utils/genUtils';
+import PageState from 'elements/hoc';
+import { useAuth } from 'contexts/AuthContext';
+import { ListPageActions } from 'elements/ListPageActions';
+import { SearchBar } from 'elements/SearchBar';
 import apiLinks from 'config/apiLinks';
 import autoCompleteConfig from 'config/autoCompleteConf';
-import { ClientTable, ClientMobileTable } from './clientTable';
+import { ClientTable, ClientMobileTable } from './clientTables';
 import AddClient from './addClient';
 import EditClient from './editClient';
 
 const Clients = () => {
   const { user } = useAuth();
   const CanEdit = user?.permissions?.includes('CanPOSTClients');
-  const { data, filteredData, autocompleteOptions, handleSearch, loading, error } = useFetchAndSearch(apiLinks.GET.clients, [
-    'client_name'
+  const { getData, data, filteredData, autocompleteOptions, handleSearch, loading, error } = useFetchAndSearch(apiLinks.GET.clients, [
+    'client_name',
+    'client_ice',
+    'client_ct',
+    'client_person'
   ]);
   const [showAddModal, setShowAddModal] = useState(false);
   const [showEditModal, setShowEditModal] = useState(false);
   const [editItem, setEditItem] = useState(null);
-
   const handleShowAddModal = () => {
     setShowAddModal(true);
   };
@@ -38,7 +41,7 @@ const Clients = () => {
     setShowEditModal(false);
   };
   const handleSuccessEdit = () => {
-    getData();
+    getData(apiLinks.GET.clients);
     handleCloseEditModal();
   };
   const AddEditModals = () => {
@@ -54,7 +57,8 @@ const Clients = () => {
 
   return (
     <PageState error={error} loading={loading}>
-      <Row className="mb-3 align-items-center">
+      <Row className="d-flex flex-row mb-3 align-items-center">
+        <SearchBar autocompleteOptions={autocompleteOptions} handleSearch={handleSearch} autoCompleteConfig={autoCompleteConfig.Clients} />
         <ListPageActions
           data={filteredData}
           dataKey="clients"
@@ -64,20 +68,15 @@ const Clients = () => {
           addAction={handleShowAddModal}
           addIcon={<AiOutlineUserAdd size={25} />}
         />
-        <SearchBar autocompleteOptions={autocompleteOptions} handleSearch={handleSearch} autoCompleteConfig={autoCompleteConfig.Clients} />
       </Row>
-      <Row>
-        <Col>
-          <ClientTable
-            data={data}
-            CanEdit={CanEdit}
-            setEditItem={setEditItem}
-            handleShowEditModal={handleShowEditModal}
-            loading={loading}
-            filteredData={filteredData}
-          />
-        </Col>
-      </Row>
+      <ClientTable
+        data={data}
+        CanEdit={CanEdit}
+        setEditItem={setEditItem}
+        handleShowEditModal={handleShowEditModal}
+        loading={loading}
+        filteredData={filteredData}
+      />
       <ClientMobileTable filteredData={filteredData} loading={loading} />
       <AddEditModals />
     </PageState>

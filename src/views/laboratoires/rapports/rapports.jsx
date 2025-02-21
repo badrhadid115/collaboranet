@@ -12,8 +12,8 @@ import dayjs from 'dayjs';
 import { Link } from 'react-router-dom';
 
 //LOCAL IMPORTS
-import { Loading, Page500, Page403, Page404 } from 'views/pages';
-import { useAuth } from 'views/auth/AuthContext';
+import { Loading, Page500, Page403, Page404 } from 'elements/hoc';
+import { useAuth } from 'contexts/AuthContext';
 import { downloadExcel } from 'utils/genUtils';
 import { renderFileLink, renderDevisGroup } from 'utils/laboUtils';
 import excelOptions from 'config/excelOptions';
@@ -29,7 +29,7 @@ const Rapports = () => {
   const CanEdit = user?.permissions?.includes('CanPOSTReports');
   const CanViewClient = user?.permissions?.includes('CanViewClients');
   const CanViewDevis = user?.permissions?.includes('CanViewDevis');
-  
+
   const [data, setData] = useState([]);
   const [filteredData, setFilteredData] = useState([]);
   const [loading, setLoading] = useState(true);

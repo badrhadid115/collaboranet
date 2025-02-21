@@ -1,7 +1,7 @@
 import React from 'react';
 import PropTypes from 'prop-types';
 import { Navigate, useLocation } from 'react-router-dom';
-import { useAuth } from './AuthContext';
+import { useAuth } from '../contexts/AuthContext';
 
 const AuthGuard = ({ children }) => {
   const location = useLocation();
@@ -11,7 +11,6 @@ const AuthGuard = ({ children }) => {
   if (pubRoutes.includes(location.pathname)) {
     return children;
   }
-
   if (!user) {
     return <Navigate to="/connexion" replace />;
   }

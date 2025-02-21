@@ -5,7 +5,8 @@ import VirtualList from 'rc-virtual-list';
 import { RiUserStarFill } from 'react-icons/ri';
 import { HiReceiptTax } from 'react-icons/hi';
 import { FaEdit } from 'react-icons/fa';
-import { generateFilterOptions, TooltipButton } from 'utils/genUtils';
+import { generateFilterOptions } from 'utils/genUtils';
+import { TooltipButton } from 'elements/TooltipButton';
 const getFilterOptions = (data) => ({
   sector_name: generateFilterOptions(data, 'sector_name'),
   client_type_name: generateFilterOptions(data, 'client_type_name'),
@@ -137,7 +138,7 @@ function ClientTable({ data, CanEdit, setEditItem, handleShowEditModal, loading,
         loading={loading}
         rowKey="client_id"
         tableLayout="fixed"
-        pagination={{ position: ['bottomCenter'], pageSize: 20 }}
+        pagination={{ position: ['bottomCenter'], pageSize: 20, hideOnSinglePage: true }}
         locale={{ emptyText: <Empty description="Aucun Client" /> }}
       />
     </div>
@@ -158,7 +159,7 @@ function ClientMobileTable({ filteredData, loading }) {
     <div className="mobile-only">
       {filteredData.length === 0 && !loading && <Empty description="Aucun Client" />}
       <List>
-        <VirtualList data={filteredData} height={420} itemHeight={20} itemKey="client_id">
+        <VirtualList data={filteredData} height={600} itemHeight={20} itemKey="client_id">
           {(option) => (
             <List.Item key={option.client_id}>
               <Link to={`./${option.client_name}`} className="w-100 text-decoration-none">
